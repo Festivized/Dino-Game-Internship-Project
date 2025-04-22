@@ -8,7 +8,7 @@ import pygame
 
 # Initialize Pygame and create a window
 pygame.init()
-screen = pygame.display.set_mode((800, 400))
+screen = pygame.display.set_mode((1920, 1080))
 clock = pygame.time.Clock()
 running = True  # Pygame main loop, kills the pygame when False
 
