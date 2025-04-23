@@ -10,6 +10,9 @@ import pygame
 pygame.init()
 screen = pygame.display.set_mode((1920, 1080))
 clock = pygame.time.Clock()
+pygame.mixer.init()
+pygame.mixer.music.load("assets/music/1.mp3")
+pygame.mixer.music.play()
 running = True  # Pygame main loop, kills the pygame when False
 
 # Game state variables
@@ -19,18 +22,18 @@ JUMP_GRAVITY_START_SPEED = -20  # The speed at which the player jumps
 players_gravity_speed = 0  # The current speed at which the player falls
 
 # Load level assets
-SKY_SURF = pygame.image.load("graphics/level/sky.png").convert()
-GROUND_SURF = pygame.image.load("graphics/level/ground.png").convert()
+SKY_SURF = pygame.image.load("assets/graphics/level/sky.png").convert()
+GROUND_SURF = pygame.image.load("assets/graphics/level/ground.png").convert()
 game_font = pygame.font.Font(pygame.font.get_default_font(), 50)
 score_surf = game_font.render("SCORE?", False, "Black")
-score_rect = score_surf.get_rect(center=(400, 50))
+score_rect = score_surf.get_rect(center=(800, 100))
 
 # Load sprite assets
 player_surf = pygame.image.load(
-    "graphics/player/player_walk_1.png"
+    "assets/graphics/player/player_walk_1.png"
 ).convert_alpha()
 player_rect = player_surf.get_rect(bottomleft=(25, GROUND_Y))
-egg_surf = pygame.image.load("graphics/egg/egg_1.png").convert_alpha()
+egg_surf = pygame.image.load("assets/graphics/egg/egg_1.png").convert_alpha()
 egg_rect = egg_surf.get_rect(bottomleft=(800, GROUND_Y))
 
 
@@ -45,8 +48,8 @@ while running:
             # When player wants to jump by pressing SPACE
             if (
                 event.type == pygame.KEYDOWN
-                and event.key == pygame.K_SPACE
-                or event.type == pygame.MOUSEBUTTONDOWN
+                and event.key == pygame.K_j
+                or event.type == pygame.K_f
             ) and player_rect.bottom >= GROUND_Y:
                 players_gravity_speed = JUMP_GRAVITY_START_SPEED
         else:
@@ -89,6 +92,6 @@ while running:
     # flip() the display to put your work on screen
     pygame.display.flip()
 
-    clock.tick(60)  # Limits game loop to 60 FPS
+    clock.tick(100)  # Limits game loop to 60 FPS
 
 pygame.quit()
