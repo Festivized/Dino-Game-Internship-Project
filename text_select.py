@@ -33,7 +33,7 @@ while isrunning:
         isinmenu = True
     if istextanim:
         if animsize<60:
-            animsize+=2
+            animsize+=1
             ismenuloaded = False
             print(animsize)
             pygame.font.Font.set_point_size(game_font,animsize)
@@ -45,4 +45,4 @@ while isrunning:
         pygame.font.Font.set_point_size(game_font,animsize)
     clock.tick(60)
 
-    FUCKING FINALLY
+    # FUCKING FINALLY
