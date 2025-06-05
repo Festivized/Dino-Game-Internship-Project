@@ -4,19 +4,12 @@ import pygame
 pygame.init()
 screen = pygame.display.set_mode((800, 400))
 clock = pygame.time.Clock()
-
-# Conditionals
-isrunning = True
 ismenuloaded = False
-# isinmenu = False
-istextanim = False
+isrunning = True
 
-# Variable Initialization
-menu_select = 0
 # window display settings
 pygame.display.set_icon(pygame.image.load("assets/graphics/egg/egg_1.png"))
 pygame.display.set_caption("Placeholder")
-screen.fill("#131314") # render dark grey
 
 #load music
 pygame.mixer.init()
@@ -24,17 +17,27 @@ pygame.mixer.music.load("assets/music/1.mp3")
 
 # Constants
 animsize = 50
-# base_font = pygame.font.Font(pygame.font.get_default_font(),50)
-title_font = pygame.font.Font(pygame.font.get_default_font(),20)
-game_font=menu_font1 = menu_font2 = menu_font3 = pygame.font.Font(pygame.font.get_default_font(),10)
-# title_font = pygame.font.Font.set_point_size(base_font,100)
-# game_font = pygame.font.Font.set_point_size(base_font,50)
-# Asset load
 
 while isrunning:
-    while not ismenuloaded: #menu loader
-        screen.fill("#ff00ff")
-        # load menu assets
+    while not ismenuloaded: # menu asset loader
+        # invalid catcher
+        screen.fill("#B00BA5")
+        # menu status conditionals
+        istextanim = False
+        ismenuinteract = False
+        isquitloaded = False
+        # variable initialization
+        menu_select = 0
+        quit_select = True
+
+        # font loader
+        title_font = pygame.font.Font(pygame.font.get_default_font(),50)
+        fontsize_1 = 20
+        menu_font1 = pygame.font.Font(pygame.font.get_default_font(),fontsize_1)
+        fontsize_2 = 20
+        menu_font2 = pygame.font.Font(pygame.font.get_default_font(),fontsize_2)
+        fontsize_3 = 20
+        menu_font3 = pygame.font.Font(pygame.font.get_default_font(),fontsize_3)
         # Title
         title_surf = title_font.render("Placeholder", True, "White")
         title_rect = title_surf.get_rect(topleft=(50,75))
@@ -58,6 +61,24 @@ while isrunning:
         pygame.display.update()
 
     while ismenuloaded:
+
+        # if isquitloaded: # quit menu
+        #     for event in pygame.event.get():
+        #     # pygame.QUIT --> user clicked X to close your window
+        #         if event.type == pygame.QUIT:
+        #             isrunning = False
+        #         if event.type == pygame.KEYUP:
+        #             if event.key == pygame.K_w and quit_select: #cycle left
+        #                 quit_select = not quit_select
+        #                 ismenu_updated = True
+        #             if event.key == pygame.K_s and not quit_select: #cycle right
+        #                 quit_select = not quit_select
+        #                 ismenu_updated = True
+        #             if event.key == pygame.K_RETURN and quit_select:
+        #                 isquitloaded = False
+        #             else:
+        #                 isrunning = False
+
         for event in pygame.event.get():
             # pygame.QUIT --> user clicked X to close your window
             if event.type == pygame.QUIT:
@@ -69,21 +90,37 @@ while isrunning:
                 if event.key == pygame.K_s and menu_select < 2: #cycle down
                     menu_select += 1
                     ismenu_updated = True
+                if event.key == pygame.K_RETURN:
+                    ismenuinteract = True
                 print(event.key)
                 print(menu_select)
 
+        if ismenuinteract:
+            if menu_select == 0: # Play
+                ismenuloaded = False
+                isqueueloaded = True
+            elif menu_select == 1: # Settings
+                isquitloaded = True
+            else: #exit
+                isrunning = False
+                # open exit splash and then exits
+            # ismenuinteract = False
+
         # take menu inputs
+
         if istextanim and animsize<60:
             animsize+=2
             ismenuloaded = False
             print(animsize)
             pygame.font.Font.set_point_size(game_font,animsize)
-        if not istextanim and animsize<=60 and animsize>50:
+        # if not istextanim and 60 >= animsize > 50:
+        elif 60 >= animsize > 50: #might be able to simplify?
             animsize-=1
             print(animsize)
             ismenuloaded = False
             pygame.font.Font.set_point_size(game_font,animsize)
         pygame.display.update()
+
 
         # make the text an object that takes inputs,
 # while isinmenu:
