@@ -13,6 +13,7 @@ clock = pygame.time.Clock()
 pygame.mixer.init()
 pygame.mixer.music.load("assets/music/1.mp3")
 pygame.mixer.music.play()
+
 running = True  # Pygame main loop, kills the pygame when False
 
 # Game state variables
