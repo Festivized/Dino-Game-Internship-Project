@@ -307,12 +307,12 @@ def gameactive():
         screen.blit(joshuah_surf, joshuah_rect)
         screen.blits(((cloud1_surf,cloud1_rect),(cloud2_surf,cloud2_rect),(cloud3_surf,cloud3_rect)))
         pygame.display.flip()
-
-        # could cause problems, trying to give plr a second to respond before gamestart
-        if loadbuffer:
-            if paused() == 0:
-                return 0
-            loadbuffer = False
+        # move transition mask out
+        # # could cause problems, trying to give plr a second to respond before gamestart
+        # if loadbuffer:
+        #     if paused() == 0:
+        #         return 0
+        #     loadbuffer = False
 
 
 # main
@@ -322,6 +322,7 @@ def main():
     while menustate != 0:
         if menustate == 1:
             menustate = menuactive()
+            # move transition mask in
         elif menustate == 2:
             menustate = gameactive()
             score_writer(score_ram)
