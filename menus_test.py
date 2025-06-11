@@ -93,6 +93,7 @@ def placeholder():
 #     placeholder()
 # finished
 def parallex_scroller(sprite:surface,x_offset,y_offset,scrollspeed=5):
+    placeholder()
 def resize(index:int):
     '''scales text up to size if active'''
     global menu_select
@@ -104,6 +105,7 @@ def resize(index:int):
     elif 20 < list_fontsize[index]: # scale down if inactive
         list_fontsize[index]-=1
     # print(index,list_fontsize[index]) # for troubleshooting
+    placeholder()
 def collisioncheck():
     '''checks player_rect against collidables list, if hit return bool:True'''
     global list_collidable
