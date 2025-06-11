@@ -19,11 +19,13 @@ clock = pygame.time.Clock()
 GROUND_Y = 300  # The Y-coordinate of the ground level
 JUMP_GRAVITY_START_SPEED = -20  # The speed at which the player jumps
 WORLD_SCROLLSPEED = 5
+TICKSPEED = 100
 
 # variables init
 # menu
 menu_select = 0
 list_fontsize=[20,20,20]
+
 
 if True: # delete this iftrue when im on my final pass, ignore for now as its used to collapse the block
     # Assetloader
@@ -54,8 +56,10 @@ if True: # delete this iftrue when im on my final pass, ignore for now as its us
     condor_rect = condor_surf0.get_rect(bottomleft=(800, GROUND_Y-100))
     list_condor = [condor_surf0,condor_surf1,condor_surf2]
     # cacti
-    cacti_surf = pygame.image.load("assets/sprites/cacti.PNG").convert_alpha()
-    cacti_rect = cacti_surf.get_rect(bottomleft=(800, GROUND_Y+100))
+    cacti_surf = pygame.image.load("assets/sprites/cacti.png").convert_alpha()
+    cacti_rect = cacti_surf.get_rect(bottomleft=(800, GROUND_Y))
+    # collidable sprites
+    list_collidable = [cacti_rect,condor_rect]
     # decorational assets (unused)
     joshuah_surf = pygame.image.load("assets/sprites/joshuah.PNG").convert_alpha()
     joshuah_rect = joshuah_surf.get_rect(bottomleft=(800, GROUND_Y+100))
@@ -73,13 +77,22 @@ pygame.display.set_caption("Placeholder")
 menustate = 1 #[exit,menu,game,transition]
 
 # func defs
-def score_update(): # Imports and updates the top 3 scores from saved file and returning it as a list
-    with open('highscores.txt', 'r') as r:
-        content = r.read()
-    return eval(content)
-def collisions(player,objects):
-    # if obsticles:
-    #     player.colliderect(obstacle_rect): return False
+def placeholder():
+    print("wip")
+# scorehandler
+# def score_counter():
+#     placeholder()
+# def score_writer():
+#     placeholder()
+#
+# def score_reader(): # Imports and updates the top 3 scores from saved file and returning as a dictionary credits:Dylan L
+#     with open('assets/score.txt', 'r') as file:
+#         content = file.read()
+#     return eval(content)
+# def score_displayer():
+#     placeholder()
+# finished
+def parallex_scroller(sprite:surface,x_offset,y_offset,scrollspeed=5):
 def resize(index:int):
     '''scales text up to size if active'''
     global menu_select
@@ -91,6 +104,13 @@ def resize(index:int):
     elif 20 < list_fontsize[index]: # scale down if inactive
         list_fontsize[index]-=1
     # print(index,list_fontsize[index]) # for troubleshooting
+def collisioncheck():
+    '''checks player_rect against collidables list, if hit return bool:True'''
+    global list_collidable
+    for rect in list_collidable:
+        if player_rect.colliderect(rect):
+            return True
+    return False
 def animation_cycler(list: list,delmin:int,delmax:int):
     '''cycles through anim frames for a sprite, set delmin=delmax if want consistant timing'''
 def menuactive():
@@ -100,12 +120,15 @@ def menuactive():
     screen.fill("#B00BA5")
     # variable initialization
     menu_select = 0
+    # score_ram = score_reader()
 
     # font loader
     title_font = pygame.font.Font(pygame.font.get_default_font(),50)
     # Title
     surf_title = title_font.render("Placeholder", True, "White")
     rect_title = surf_title.get_rect(topleft=(50,75)) # topleft=(50,75)
+    # surf_score = title_font.render(f"Topscores:\n{score_update()}", True, "White")
+    # rect_score = surf_title.get_rect(topleft=(50,75)) # topleft=(50,75)
     # Menu rect init
     pygame.display.update()
     while True:
@@ -136,7 +159,7 @@ def menuactive():
         resize(1)
         resize(2)
         # menu renderer
-        clock.tick(100)
+        clock.tick(TICKSPEED)
         screen.fill("#B00BA5") #// holy shit calamity reference
         menu_font1 = pygame.font.Font(pygame.font.get_default_font(),list_fontsize[0])
         menu_font2 = pygame.font.Font(pygame.font.get_default_font(),list_fontsize[1])
@@ -154,11 +177,14 @@ def menuactive():
 def gameactive():
     global menustate
     global GROUND_Y
+    global TICKSPEED
     # Game state variables reinit
     players_gravity_speed = 0  # The current speed at which the player falls
     isalive = True
-    cacti_rect.left = 800
-    start_time = pygame.time.get_ticks()
+    isjumped = False
+    cacti_rect.left = yukka_rect.left = joshuah_rect.left = 800
+    tickspeed = TICKSPEED #100ms/frame = 60fps
+    # start_time = pygame.time.get_ticks()
 
     while True:
         for event in pygame.event.get():
@@ -166,36 +192,53 @@ def gameactive():
                 menustate=0
             if event.type == pygame.KEYDOWN:
                 if isalive:
-                    if event.key == pygame.K_SPACE: # make it a chargeup?
+                    if event.key == pygame.K_SPACE and not isjumped: # make it a chargeup?
                         players_gravity_speed = -20
+                        isjumped = True
                 if event.key == pygame.K_ESCAPE:
                     return 1
+        if collisioncheck(): #if it hits (true) not alive
+            isalive = False
+            while not isalive:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        return 2
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_ESCAPE:
+                            return 1
+                # punt the fucker offscreen
+
+                # run deathloop
+                # def death():
+                #     while True:
+                # tick gets slowed, move player rect fling out like a goomba (have it be a toggle)
+        # def transitionactive():
         # calculations
         # cacti
         cacti_rect.x -= 5
         if cacti_rect.right <= 0:
-            cacti_rect.left = 800+random.randint(0,100)
+            cacti_rect.left = 800+random.randint(0,400)
             cacti_rect.x -= 5
-        if yukka_rect.right <= 0:
-            yukka_rect.left = 800+random.randint(0,100)
-            yukka_rect.x -= 5
-        if joshuah_rect.right <= 0:
-            joshuah_rect.left = 800+random.randint(0,100)
-            joshuah_rect.x -= 5
+        yukka_rect.x -=5
+        # if yukka_rect.right <= 0: # I cant find a way to distinguish between these and the forground objects
+        #     yukka_rect.left = 800+random.randint(0,800)
+        #     yukka_rect.x -= 5
+        # joshuah_rect.x -=5
+        # if joshuah_rect.right <= 0:
+        #     joshuah_rect.left = 800+random.randint(400,1200)
+        #     joshuah_rect.x -= 5
     # player
         players_gravity_speed += 1
         player_rect.y += players_gravity_speed
         if player_rect.bottom > GROUND_Y:
             player_rect.bottom = GROUND_Y
-        # add a func for checking colision
-        # if egg_rect.colliderect(player_rect):
-        #         is_playing = False
+            isjumped = False
 
-        clock.tick(100)
+        clock.tick(tickspeed)
         # renderer
-        # def renderscroller(sprite_surf,offset=None):
-        #     if offset != none spriterect.x+981347
-        #     screen.blit(sprite_surf,)
+        # def renderscroller(sprite_surf:surface,xoffset:int,speed:int,y:):
+        #     get length of surf, get speed, fuckccu
+        #     screen.blit(sprite_surf, (multiple rects))
         screen.blit(sky_surf, (0, 0))
         screen.blit(ground_surf, (0, 0))
         screen.blit(cacti_surf, cacti_rect)
@@ -203,10 +246,9 @@ def gameactive():
         screen.blit(joshuah_surf,joshuah_rect)
         screen.blit(list_player[0], player_rect)
         pygame.display.flip()
-# def transitionactive():
-
 def main():
     global menustate
+    queuedstate = None
     while menustate != 0:
         if menustate == 1:
             menustate = menuactive()
