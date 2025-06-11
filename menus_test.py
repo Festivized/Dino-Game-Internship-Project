@@ -20,6 +20,7 @@ clock = pygame.time.Clock()
 # game
 GROUND_Y = 300  # The Y-coordinate of the ground level
 JUMP_GRAVITY_START_SPEED = -20  # The speed at which the player jumps
+WORLD_SCROLLSPEED = 5
 
 # variables init
 # menu
@@ -32,12 +33,14 @@ if True: # delete this iftrue when im on my final pass, ignore for now as its us
     splash_surf = pygame.image.load("assets/splash.png")
     splash_rect = splash_surf.get_rect(topleft=(0,0))
     # Load level assets
-    sky_surf = pygame.image.load("assets/backdrop/sky.PNG").convert()
     parallex0 = pygame.image.load("assets/backdrop/parallex/back1.PNG")
     parallex1 = pygame.image.load("assets/backdrop/parallex/back1.PNG")
     parallex2 = pygame.image.load("assets/backdrop/parallex/back1.PNG")
     list_parallex = [parallex0,parallex1,parallex2] # same function can handle scrolling it at different speeds
-    ground_surf = pygame.image.load("assets/backdrop/ground.PNG").convert()
+    # statics
+    ground_surf = pygame.image.load("assets/backdrop/ground1.png").convert_alpha()
+    ground_rect = ground_surf.get_rect(topleft=(0,GROUND_Y))
+    sky_surf = pygame.image.load("assets/backdrop/sky.PNG").convert_alpha()
     # player
     player_surf0 = pygame.image.load("assets/graphics/player/player_walk_1.png").convert_alpha()
     player_surf1 = pygame.image.load("assets/graphics/player/player_walk_2.png").convert_alpha()
@@ -48,11 +51,11 @@ if True: # delete this iftrue when im on my final pass, ignore for now as its us
     condor_surf0 = pygame.image.load("assets/sprites/condor/cond1.PNG").convert_alpha()
     condor_surf1 = pygame.image.load("assets/sprites/condor/cond2.PNG").convert_alpha()
     condor_surf2 = pygame.image.load("assets/sprites/condor/cond3.PNG").convert_alpha()
-    condor_rect = (800, GROUND_Y-100)
+    condor_rect = condor_surf0.get_rect(bottomleft=(800, GROUND_Y-100))
     list_condor = [condor_surf0,condor_surf1,condor_surf2]
     # cacti
     cacti_surf = pygame.image.load("assets/sprites/cacti.PNG").convert_alpha()
-    cacti_rect = (800, GROUND_Y)
+    cacti_rect = cacti_surf.get_rect(bottomleft=(800, GROUND_Y+100))
     # decorational assets (unused)
     joshuah_surf = pygame.image.load("assets/sprites/joshuah.PNG").convert_alpha()
     joshuah_rect = joshuah_surf.get_rect(bottomleft=(800, GROUND_Y))
@@ -83,7 +86,6 @@ def resize(index:int):
     # print(index,list_fontsize[index]) # for troubleshooting
 def animation_cycler(list: list,delmin:int,delmax:int):
     '''cycles through anim frames for a sprite, set delmin=delmax if want consistant timing'''
-
 def menuactive():
     global menu_select
     # reloads variables
@@ -144,9 +146,11 @@ def menuactive():
         pygame.display.flip()
 def gameactive():
     global menustate
+    global GROUND_Y
     # Game state variables reinit
     players_gravity_speed = 0  # The current speed at which the player falls
     isalive = True
+    cacti_rect.left = 800
     start_time = pygame.time.get_ticks()
 
     while True:
@@ -159,29 +163,30 @@ def gameactive():
                         players_gravity_speed = -20
                 if event.key == pygame.K_ESCAPE:
                     return 1
-
-        # Adjust egg's horizontal location then blit it
-            egg_rect.x -= 5
-            if egg_rect.right <= 0:
-                egg_rect.left = 800
-            screen.blit(egg_surf, egg_rect)
-        # playerblitter
-            players_gravity_speed += 1
-            player_rect.y += players_gravity_speed
-            if player_rect.bottom > GROUND_Y:
-                player_rect.bottom = GROUND_Y
-            screen.blit(player_surf, player_rect)
+        # calculations
+        # cacti
+        cacti_rect.x -= 5
+        if cacti_rect.right <= 0:
+            cacti_rect.left = 800+random.randint(0,100)
+        # player
+        players_gravity_speed += 1
+        player_rect.y += players_gravity_speed
+        if player_rect.bottom > GROUND_Y:
+            player_rect.bottom = GROUND_Y
         # add a func for checking colision
         # if egg_rect.colliderect(player_rect):
         #         is_playing = False
 
-        # clock.tick(100)
-        # # renderer
-        # screen.blit(SKY_SURF, (0, 0))
-        # screen.blit(GROUND_SURF, (0, GROUND_Y))
-            # pygame.draw.rect(screen, "#c0e8ec", score_rect)
-            # pygame.draw.rect(screen, "#c0e8ec", score_rect, 10)
-            screen.blit(score_surf, score_rect)
+        clock.tick(100)
+        # renderer
+        def renderscroller(sprite_surf,offset=None):
+            if offset != none spriterect.x+981347
+            screen.blit(sprite_surf,)
+        screen.blit(sky_surf, (0, 0))
+        screen.blit(ground_surf, (0, 0))
+        screen.blit(cacti_surf, cacti_rect)
+        screen.blit(list_player[0], player_rect)
+        pygame.display.flip()
 def main():
     global menustate
     while menustate != 0:
