@@ -20,8 +20,6 @@ GROUND_Y = 300  # The Y-coordinate of the ground level
 JUMP_GRAVITY_START_SPEED = -20  # The speed at which the player jumps
 WORLD_SCROLLSPEED = 5
 TICKSPEED = 100
-
-# variables init
 # menu
 menu_select = 0
 list_fontsize=[20,20,20]
@@ -36,8 +34,8 @@ if True: # delete this iftrue when im on my final pass, ignore for now as its us
     transition_rect = transition_surf.get_rect(topleft=(0,0))
     # Load level assets
     parallex0 = pygame.image.load("assets/backdrop/parallex/back1.PNG")
-    parallex1 = pygame.image.load("assets/backdrop/parallex/back1.PNG")
-    parallex2 = pygame.image.load("assets/backdrop/parallex/back1.PNG")
+    parallex1 = pygame.image.load("assets/backdrop/parallex/back2.PNG")
+    parallex2 = pygame.image.load("assets/backdrop/parallex/back3.PNG")
     # list_parallex = [parallex0,parallex1,parallex2] # same function can handle scrolling it at different speeds
     # landscape
     ground_surf = pygame.image.load("assets/backdrop/ground1.png").convert_alpha()
@@ -71,7 +69,7 @@ if True: # delete this iftrue when im on my final pass, ignore for now as its us
 
 # window display settings
 pygame.display.set_icon(pygame.image.load("assets/graphics/egg/egg_1.png"))
-pygame.display.set_caption("Placeholder")
+pygame.display.set_caption("Hey chat have we heard of skibity toilet")
 
 # initial loop setup (changed from a whilerunning if loop to a system inspired by evan's modular stuff)
 menustate = 1 #[exit,menu,game,transition]
@@ -79,21 +77,28 @@ menustate = 1 #[exit,menu,game,transition]
 # func defs
 def placeholder():
     print("wip")
-# scorehandler
-# def score_counter():
-#     placeholder()
-# def score_writer():
-#     placeholder()
-#
-# def score_reader(): # Imports and updates the top 3 scores from saved file and returning as a dictionary credits:Dylan L
-#     with open('assets/score.txt', 'r') as file:
-#         content = file.read()
-#     return eval(content)
-# def score_displayer():
+def score_reader(): # Imports and updates the top 3 scores from saved file and returning as a list credits:Dylan L
+    with open('assets/score.txt', 'r') as file:
+        content = file.read()
+    return eval(content)
+score_ram = score_reader()
+def score_eval(newscore:int):
+    global score_ram
+    score_ram.append(newscore)
+    score_ram.sort(reverse=True)
+    score_ram=score_ram[0:3]
+    placeholder()
+def score_writer(scorelist=None):
+    if scorelist == None: # apparantly list souldent be used as a default value as it can be modified // not really relevant here but i wanted the warning to go away
+        scorelist = [0,0,0]
+    with open('assets/score.txt', 'w') as file:
+        content = file.write(str(scorelist))
+def score_formatter():
+    formatted = f"1. {score_ram[0]}\n2. {score_ram[1]}\n3. {score_ram[2]}"
+    return formatted
+# def parallex_scroller(sprite,x_offset,y_offset,scrollspeed=5):
 #     placeholder()
 # finished
-def parallex_scroller(sprite:surface,x_offset,y_offset,scrollspeed=5):
-    placeholder()
 def resize(index:int):
     '''scales text up to size if active'''
     global menu_select
@@ -122,15 +127,16 @@ def menuactive():
     screen.fill("#B00BA5")
     # variable initialization
     menu_select = 0
-    # score_ram = score_reader()
+
 
     # font loader
     title_font = pygame.font.Font(pygame.font.get_default_font(),50)
+    score_font = pygame.font.Font(pygame.font.get_default_font(),20)
     # Title
     surf_title = title_font.render("Placeholder", True, "White")
     rect_title = surf_title.get_rect(topleft=(50,75)) # topleft=(50,75)
-    # surf_score = title_font.render(f"Topscores:\n{score_update()}", True, "White")
-    # rect_score = surf_title.get_rect(topleft=(50,75)) # topleft=(50,75)
+    surf_score_mn = score_font.render(f"Topscores:\n{score_formatter()}", True, "White")
+    rect_score_mn = surf_score_mn.get_rect(topright=(750,75)) # topleft=(50,75)
     # Menu rect init
     pygame.display.update()
     while True:
@@ -142,10 +148,8 @@ def menuactive():
                 print("event",event)
                 if event.key == pygame.K_w and menu_select > 0: #cycle up
                     menu_select -= 1
-                    ismenu_updated = True
                 if event.key == pygame.K_s and menu_select < 2: #cycle down
                     menu_select += 1
-                    ismenu_updated = True
                 if event.key == pygame.K_RETURN:
                     print("kreturn")
                     if menu_select == 0: # Play
@@ -173,22 +177,22 @@ def menuactive():
         rect_2 = surf_2.get_rect(midleft=(50,261)) # topleft=(50,250)
         rect_3 = surf_3.get_rect(midleft=(50,311)) # topleft=(50,300)
         # screen.blit(surf_1,rect_1)
-        screen.blits(((splash_surf,splash_rect),(surf_title,rect_title),(surf_1,rect_1),(surf_2,rect_2),(surf_3,rect_3)))
+        screen.blits(((splash_surf,splash_rect),(surf_title,rect_title),(surf_1,rect_1),(surf_2,rect_2),(surf_3,rect_3),(surf_score_mn,rect_score_mn)))
         # print(screen.blits(((surf_title,rect_title),(surf_1,rect_1),(surf_2,rect_2),(surf_3,rect_3)),doreturn=True)) #// selective reblitting? have all updated objects be placed in a tuple list?
         pygame.display.flip()
 def gameactive():
     global menustate
     global GROUND_Y
     global TICKSPEED
-    # Game state variables reinit
+    score_font = pygame.font.Font(pygame.font.get_default_font(),20)    # Game state variables reinit
     players_gravity_speed = 0  # The current speed at which the player falls
     isalive = True
     isjumped = False
     cacti_rect.left = yukka_rect.left = joshuah_rect.left = 800
     tickspeed = TICKSPEED #100ms/frame = 60fps
-    # start_time = pygame.time.get_ticks()
-
+    start_time = pygame.time.get_ticks()
     while True:
+        score = int((start_time-pygame.time.get_ticks())/100)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 menustate=0
@@ -201,19 +205,28 @@ def gameactive():
                     return 1
         if collisioncheck(): #if it hits (true) not alive
             isalive = False
-            while not isalive:
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        return 2
-                    if event.type == pygame.KEYDOWN:
-                        if event.key == pygame.K_ESCAPE:
+            if not isalive:
+                finalscore = score
+                score_eval(finalscore)
+                players_gravity_speed = -20
+                while True:
+                    clock.tick(50)
+                    score_surf_gm = score_font.render(f"Topscores:\n{finalscore}",antialias=True,color="white")
+                    screen.blit(score_surf_gm,score_surf_gm.get_rect(topright=(750,75)))
+                    players_gravity_speed += 1
+                    player_rect.y += players_gravity_speed
+                    screen.blit(sky_surf, (0, 0))
+                    screen.blit(ground_surf, (0, 0))
+                    screen.blit(cacti_surf, cacti_rect)
+                    screen.blit(yukka_surf,yukka_rect)
+                    screen.blit(joshuah_surf,joshuah_rect)
+                    screen.blit(list_player[2], player_rect)
+                    pygame.display.flip()
+                    for event in pygame.event.get():
+                        if event.type == pygame.QUIT:
+                            return 2
+                        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                             return 1
-                # punt the fucker offscreen
-
-                # run deathloop
-                # def death():
-                #     while True:
-                # tick gets slowed, move player rect fling out like a goomba (have it be a toggle)
         # def transitionactive():
         # calculations
         # cacti
@@ -236,11 +249,12 @@ def gameactive():
             player_rect.bottom = GROUND_Y
             isjumped = False
 
-        clock.tick(tickspeed)
+        clock.tick(TICKSPEED)
         # renderer
-        # def renderscroller(sprite_surf:surface,xoffset:int,speed:int,y:):
+        # def parallex/rendercroller(sprite_surf:surface,xoffset:int,speed:int,y:):
         #     get length of surf, get speed, fuckccu
         #     screen.blit(sprite_surf, (multiple rects))
+        screen.blit(score_font.render(f"Topscores:\n{score}", True, "White"),rect(topright=(750,75)))
         screen.blit(sky_surf, (0, 0))
         screen.blit(ground_surf, (0, 0))
         screen.blit(cacti_surf, cacti_rect)
@@ -256,6 +270,7 @@ def main():
             menustate = menuactive()
         elif menustate == 2:
             menustate = gameactive()
+    score_writer(score_ram)
     pygame.quit()
 main()
 # imms o fucking tired
