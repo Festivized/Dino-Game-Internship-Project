@@ -1,12 +1,10 @@
 import pygame
 import random
 '''
-Todo fuck no lmao
+Todo
 - selective reblitting to improve performance
-- better structure
-- finish tutorial
-- draw the assets
-- shadows/daynightcycle
+- better structure (done)
+- shadows/daynightcycle (hell no)
     - dynamic shadows based on the sun?
     - transparant shading mask?
 '''
@@ -29,15 +27,17 @@ list_fontsize=[20,20,20]
 
 if True: # delete this iftrue when im on my final pass, ignore for now as its used to collapse the block
     # Assetloader
-    # splashscreen
+    # misc assets
     splash_surf = pygame.image.load("assets/splash.png")
     splash_rect = splash_surf.get_rect(topleft=(0,0))
+    transition_surf = pygame.image.load("assets/transition.png") #1600 2x screensize, go left, stop, go left after load
+    transition_rect = transition_surf.get_rect(topleft=(0,0))
     # Load level assets
     parallex0 = pygame.image.load("assets/backdrop/parallex/back1.PNG")
     parallex1 = pygame.image.load("assets/backdrop/parallex/back1.PNG")
     parallex2 = pygame.image.load("assets/backdrop/parallex/back1.PNG")
-    list_parallex = [parallex0,parallex1,parallex2] # same function can handle scrolling it at different speeds
-    # statics
+    # list_parallex = [parallex0,parallex1,parallex2] # same function can handle scrolling it at different speeds
+    # landscape
     ground_surf = pygame.image.load("assets/backdrop/ground1.png").convert_alpha()
     ground_rect = ground_surf.get_rect(topleft=(0,GROUND_Y))
     sky_surf = pygame.image.load("assets/backdrop/sky.PNG").convert_alpha()
@@ -58,9 +58,9 @@ if True: # delete this iftrue when im on my final pass, ignore for now as its us
     cacti_rect = cacti_surf.get_rect(bottomleft=(800, GROUND_Y+100))
     # decorational assets (unused)
     joshuah_surf = pygame.image.load("assets/sprites/joshuah.PNG").convert_alpha()
-    joshuah_rect = joshuah_surf.get_rect(bottomleft=(800, GROUND_Y))
+    joshuah_rect = joshuah_surf.get_rect(bottomleft=(800, GROUND_Y+100))
     yukka_surf = pygame.image.load("assets/sprites/yukka.PNG").convert_alpha()
-    yukka_rect = yukka_surf.get_rect(bottomleft=(800, GROUND_Y))
+    yukka_rect = yukka_surf.get_rect(bottomleft=(800, GROUND_Y+100))
     yukka = (yukka_surf,yukka_rect)
     joshuah = (joshuah_surf,joshuah_rect)
     print("assets loaded")
@@ -73,6 +73,13 @@ pygame.display.set_caption("Placeholder")
 menustate = 1 #[exit,menu,game,transition]
 
 # func defs
+def score_update(): # Imports and updates the top 3 scores from saved file and returning it as a list
+    with open('highscores.txt', 'r') as r:
+        content = r.read()
+    return eval(content)
+def collisions(player,objects):
+    if obsticles:
+        player.colliderect(obstacle_rect): return False
 def resize(index:int):
     '''scales text up to size if active'''
     global menu_select
@@ -168,7 +175,14 @@ def gameactive():
         cacti_rect.x -= 5
         if cacti_rect.right <= 0:
             cacti_rect.left = 800+random.randint(0,100)
-        # player
+            cacti_rect.x -= 5
+        if yukka_rect.right <= 0:
+            yukka_rect.left = 800+random.randint(0,100)
+            yukka_rect.x -= 5
+        if joshuah_rect.right <= 0:
+            joshuah_rect.left = 800+random.randint(0,100)
+            joshuah_rect.x -= 5
+    # player
         players_gravity_speed += 1
         player_rect.y += players_gravity_speed
         if player_rect.bottom > GROUND_Y:
@@ -179,14 +193,18 @@ def gameactive():
 
         clock.tick(100)
         # renderer
-        def renderscroller(sprite_surf,offset=None):
-            if offset != none spriterect.x+981347
-            screen.blit(sprite_surf,)
+        # def renderscroller(sprite_surf,offset=None):
+        #     if offset != none spriterect.x+981347
+        #     screen.blit(sprite_surf,)
         screen.blit(sky_surf, (0, 0))
         screen.blit(ground_surf, (0, 0))
         screen.blit(cacti_surf, cacti_rect)
+        screen.blit(yukka_surf,yukka_rect)
+        screen.blit(joshuah_surf,joshuah_rect)
         screen.blit(list_player[0], player_rect)
         pygame.display.flip()
+# def transitionactive():
+
 def main():
     global menustate
     while menustate != 0:
