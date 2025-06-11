@@ -78,8 +78,8 @@ def score_update(): # Imports and updates the top 3 scores from saved file and r
         content = r.read()
     return eval(content)
 def collisions(player,objects):
-    if obsticles:
-        player.colliderect(obstacle_rect): return False
+    # if obsticles:
+    #     player.colliderect(obstacle_rect): return False
 def resize(index:int):
     '''scales text up to size if active'''
     global menu_select
