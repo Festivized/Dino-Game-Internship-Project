@@ -8,7 +8,7 @@ import pygame
 
 # Initialize Pygame and create a window
 pygame.init()
-screen = pygame.display.set_mode((1920, 1080))
+screen = pygame.display.set_mode((800, 400))
 clock = pygame.time.Clock()
 pygame.mixer.init()
 pygame.mixer.music.load("assets/music/1.mp3")
@@ -23,19 +23,21 @@ JUMP_GRAVITY_START_SPEED = -20  # The speed at which the player jumps
 players_gravity_speed = 0  # The current speed at which the player falls
 
 # Load level assets
-SKY_SURF = pygame.image.load("assets/graphics/level/sky.png").convert()
-GROUND_SURF = pygame.image.load("assets/graphics/level/ground.png").convert()
+SKY_SURF = pygame.image.load("assets/backdrop/sky.PNG").convert()
+GROUND_SURF = pygame.image.load("assets/backdrop/ground.PNG").convert()
 game_font = pygame.font.Font(pygame.font.get_default_font(), 50)
 score_surf = game_font.render("SCORE?", False, "Black")
 score_rect = score_surf.get_rect(center=(800, 100))
 
 # Load sprite assets
-player_surf = pygame.image.load(
-    "assets/graphics/player/player_walk_1.png"
-).convert_alpha()
+
 player_rect = player_surf.get_rect(bottomleft=(25, GROUND_Y))
-egg_surf = pygame.image.load("assets/graphics/egg/egg_1.png").convert_alpha()
-egg_rect = egg_surf.get_rect(bottomleft=(800, GROUND_Y))
+player_surf0 = pygame.image.load("assets/graphics/player/player_walk_1.png").convert_alpha()
+player_surf1 = pygame.image.load("assets/graphics/player/player_walk_2.png").convert_alpha()
+player_surf2 = pygame.image.load("assets/graphics/player/player_walk_3.png").convert_alpha()
+list_egg = [player_surf0,player_surf1,player_surf2]
+egg_rect = player_surf0.get_rect(bottomleft=(800, GROUND_Y))
+print()
 
 
 while running:
