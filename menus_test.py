@@ -27,7 +27,7 @@ queue = None # enemyqueue randomizer
 menu_select = 0
 list_fontsize=[20,20,20]
 score_font = pygame.font.Font(pygame.font.get_default_font(),20)
-
+title_font = pygame.font.Font(pygame.font.get_default_font(),50)
 if True: # delete this iftrue when im on my final pass, ignore for now as its used to collapse the block
     # Assetloader
     # music assets
@@ -45,6 +45,13 @@ if True: # delete this iftrue when im on my final pass, ignore for now as its us
     ground_surf = pygame.image.load("assets/backdrop/ground1.png").convert_alpha()
     ground_x = 0
     sky_surf = pygame.image.load("assets/backdrop/sky.PNG").convert_alpha()
+    cloud1_surf = pygame.image.load("assets/sprites/cloud/cloud1.PNG").convert_alpha()
+    cloud1_rect = cloud1_surf.get_rect(topleft=(0,0))
+    cloud2_surf = pygame.image.load("assets/sprites/cloud/cloud2.PNG").convert_alpha()
+    cloud2_rect = cloud2_surf.get_rect(topleft=(0,0))
+    cloud3_surf = pygame.image.load("assets/sprites/cloud/cloud3.PNG").convert_alpha()
+    cloud3_rect = cloud3_surf.get_rect(topleft=(0,0))
+
     # player
     player_surf0 = pygame.image.load("assets/graphics/player/player_walk_1.png").convert_alpha()
     player_surf1 = pygame.image.load("assets/graphics/player/player_walk_2.png").convert_alpha()
@@ -82,18 +89,6 @@ menustate = 1 #[exit,menu,game,transition]
 def placeholder():
     print("wip")
 # WIP
-def animation_cycler(anim_set:list, delay:int = 200): #200 should cause it to cycle
-    '''cycles through anim frames for a sprite, set delmin=delmax if want consistant timing'''
-    time = pygame.time.get_ticks()
-    return time//delay%len(anim_set)
-# skyline2_x -= skyline_speed # took a look at william's paralexscroll code and i think??? i threw together a solution
-#     if skyline2_x <= -800:
-#         screen.blit(skyline2_surf, (skyline2_x + 1600, 0))
-#     if skyline2_x <= -1600:
-#         skyline2_x = 0
-# joshuah_surf.get_width()
-# finished
-# score methods
 def score_reader(): # Imports and updates the top 3 scores from saved file and returning as a list credits:Dylan L
     with open('assets/score.txt', 'r') as file:
         content = file.read()
@@ -142,23 +137,35 @@ def parallex_renderer(sprite, x: int, y=0):
     screen.blit(sprite, (x + sprite.get_width(), y))
 def spritescroller(rect,min:int,max:int,stepspeed: int=5,isqueue: bool=False):
     global queue
-    rect.x -= 5
+    rect.x -= stepspeed
     if rect.right <= 0:
-        if isqueue == False:
+        if isqueue:
             queue = random.randint(0,1)
         rect.left = 800+random.randint(min,max)
-        rect.x -= 5
+        rect.x -= stepspeed
+def animation_cycler(anim_set:list, delay:int = 200): #200 should cause it to cycle
+    '''cycles through anim frames for a sprite, set delmin=delmax if want consistant timing'''
+    time = pygame.time.get_ticks()
+    return time//delay%len(anim_set)
+def paused():
+    global title_font
+    while True:
+        surf_title = score_font.render("You are paused\npress \"esc\" to unpause", False, "White")
+        screen.blit(surf_title, surf_title.get_rect(center=(400,200)))
+        pygame.display.flip()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return 0
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                return 1
+
 #body
 # def transition(nextup:int):
 
 def menuactive():
-    global menu_select
+    global menu_select, score_font, title_font
     # variable initialization
     menu_select = 0
-
-    # font loader
-    title_font = pygame.font.Font(pygame.font.get_default_font(),50)
-    score_font = pygame.font.Font(pygame.font.get_default_font(),20)
     # Title
     surf_title = title_font.render("Placeholder 2", True, "White")
     rect_title = surf_title.get_rect(topleft=(50,75)) # topleft=(50,75)
@@ -215,6 +222,7 @@ def gameactive():
     players_gravity_speed = 0
     queue = random.randint(0,1)
     # conditionals init
+    loadbuffer = True
     isalive = True
     isjumped = False
     isdeadjumped = False
@@ -223,7 +231,6 @@ def gameactive():
     joshuah_rect.left = 650
     start_time = pygame.time.get_ticks()
     tickspeed = TICKSPEED
-
     while True:
         score = int((pygame.time.get_ticks()-start_time)/100)
 
@@ -235,7 +242,8 @@ def gameactive():
                     players_gravity_speed = -20
                     isjumped = True
                 if event.key == pygame.K_ESCAPE:
-                    return 1
+                    if paused() == 0:
+                        return 0
                 if not isalive and (event.key == pygame.K_r or event.key == pygame.K_SPACE):
                     return 2
 
@@ -252,6 +260,10 @@ def gameactive():
                 spritescroller(condor_rect,100,300,5,True)
             spritescroller(yukka_rect,0,800,5)
             spritescroller(joshuah_rect,400,1200,5)
+            spritescroller(cloud1_rect,0,200,1)
+            spritescroller(cloud2_rect,0,200,2)
+            spritescroller(cloud3_rect,0,200,3)
+
             print(queue)
             # player
             players_gravity_speed += 1
@@ -293,7 +305,16 @@ def gameactive():
         screen.blit(list_condor[condor_index], condor_rect)
         screen.blit(yukka_surf, yukka_rect)
         screen.blit(joshuah_surf, joshuah_rect)
+        screen.blits(((cloud1_surf,cloud1_rect),(cloud2_surf,cloud2_rect),(cloud3_surf,cloud3_rect)))
         pygame.display.flip()
+
+        # could cause problems, trying to give plr a second to respond before gamestart
+        if loadbuffer:
+            if paused() == 0:
+                return 0
+            loadbuffer = False
+
+
 # main
 def main():
     global menustate
