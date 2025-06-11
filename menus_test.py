@@ -1,8 +1,6 @@
 import pygame
 import random
 
-from pygame import K_SPACE
-
 '''
 Todo
 - selective reblitting to improve performance
@@ -23,6 +21,7 @@ GROUND_Y = 300  # The Y-coordinate of the ground level
 JUMP_GRAVITY_START_SPEED = -20  # The speed at which the player jumps
 WORLD_SCROLLSPEED = 5
 TICKSPEED = 100
+queue = None # enemyqueue randomizer
 
 # menu
 menu_select = 0
@@ -31,6 +30,7 @@ score_font = pygame.font.Font(pygame.font.get_default_font(),20)
 
 if True: # delete this iftrue when im on my final pass, ignore for now as its used to collapse the block
     # Assetloader
+    # music assets
     # misc assets
     splash_surf = pygame.image.load("assets/splash.png")
     splash_rect = splash_surf.get_rect(topleft=(0,0))
@@ -50,11 +50,11 @@ if True: # delete this iftrue when im on my final pass, ignore for now as its us
     player_surf1 = pygame.image.load("assets/graphics/player/player_walk_2.png").convert_alpha()
     player_surf2 = pygame.image.load("assets/graphics/player/player_jump.png").convert_alpha()
     player_rect = player_surf0.get_rect(bottomleft=(25, GROUND_Y))
-    list_player = [player_surf0,player_surf1,player_surf2]
+    list_player = [player_surf0,player_surf1]
     # condor
-    condor_surf0 = pygame.image.load("assets/sprites/condor/cond1.PNG").convert_alpha()
-    condor_surf1 = pygame.image.load("assets/sprites/condor/cond2.PNG").convert_alpha()
-    condor_surf2 = pygame.image.load("assets/sprites/condor/cond3.PNG").convert_alpha()
+    condor_surf0 = pygame.image.load("assets/sprites/condor/cond1.png").convert_alpha()
+    condor_surf1 = pygame.image.load("assets/sprites/condor/cond2.png").convert_alpha()
+    condor_surf2 = pygame.image.load("assets/sprites/condor/cond3.png").convert_alpha()
     condor_rect = condor_surf0.get_rect(bottomleft=(800, GROUND_Y-100))
     list_condor = [condor_surf0,condor_surf1,condor_surf2]
     # cacti
@@ -64,9 +64,9 @@ if True: # delete this iftrue when im on my final pass, ignore for now as its us
     list_collidable = [cacti_rect,condor_rect]
     # decorational assets (unused)
     joshuah_surf = pygame.image.load("assets/sprites/joshuah.PNG").convert_alpha()
-    joshuah_rect = joshuah_surf.get_rect(bottomleft=(800, GROUND_Y+100))
+    joshuah_rect = joshuah_surf.get_rect(bottomleft=(800, GROUND_Y+150))
     yukka_surf = pygame.image.load("assets/sprites/yukka.PNG").convert_alpha()
-    yukka_rect = yukka_surf.get_rect(bottomleft=(800, GROUND_Y+100))
+    yukka_rect = yukka_surf.get_rect(bottomleft=(800, GROUND_Y+150))
     yukka = (yukka_surf,yukka_rect)
     joshuah = (joshuah_surf,joshuah_rect)
     print("assets loaded")
@@ -82,8 +82,10 @@ menustate = 1 #[exit,menu,game,transition]
 def placeholder():
     print("wip")
 # WIP
-def animation_cycler(list: list,delmin:int,delmax:int):
+def animation_cycler(anim_set:list, delay:int = 200): #200 should cause it to cycle
     '''cycles through anim frames for a sprite, set delmin=delmax if want consistant timing'''
+    time = pygame.time.get_ticks()
+    return time//delay%len(anim_set)
 # skyline2_x -= skyline_speed # took a look at william's paralexscroll code and i think??? i threw together a solution
 #     if skyline2_x <= -800:
 #         screen.blit(skyline2_surf, (skyline2_x + 1600, 0))
@@ -138,7 +140,17 @@ def parallex_scroller(sprite, x: int, scrollspeed=5):
 def parallex_renderer(sprite, x: int, y=0):
     screen.blit(sprite, (x, y))
     screen.blit(sprite, (x + sprite.get_width(), y))
+def spritescroller(rect,min:int,max:int,stepspeed: int=5,isqueue: bool=False):
+    global queue
+    rect.x -= 5
+    if rect.right <= 0:
+        if isqueue == False:
+            queue = random.randint(0,1)
+        rect.left = 800+random.randint(min,max)
+        rect.x -= 5
 #body
+# def transition(nextup:int):
+
 def menuactive():
     global menu_select
     # variable initialization
@@ -148,7 +160,7 @@ def menuactive():
     title_font = pygame.font.Font(pygame.font.get_default_font(),50)
     score_font = pygame.font.Font(pygame.font.get_default_font(),20)
     # Title
-    surf_title = title_font.render("Placeholder", True, "White")
+    surf_title = title_font.render("Placeholder 2", True, "White")
     rect_title = surf_title.get_rect(topleft=(50,75)) # topleft=(50,75)
     surf_score_mn = score_font.render(f"Topscores:\n{score_formatter()}", True, "White")
     rect_score_mn = surf_score_mn.get_rect(topright=(750,75)) # topleft=(50,75)
@@ -186,7 +198,7 @@ def menuactive():
         menu_font2 = pygame.font.Font(pygame.font.get_default_font(),list_fontsize[1])
         menu_font3 = pygame.font.Font(pygame.font.get_default_font(),list_fontsize[2])
         surf_1 = menu_font1.render("Play", True, "White")
-        surf_2 = menu_font2.render("Settings", True, "White")
+        surf_2 = menu_font2.render("Help", True, "White")
         surf_3 = menu_font3.render("Exit", True, "White")
         rect_1 = surf_1.get_rect(midleft=(50,211)) # topleft=(50,200)
         rect_2 = surf_2.get_rect(midleft=(50,261)) # topleft=(50,250)
@@ -196,15 +208,19 @@ def menuactive():
         # print(screen.blits(((surf_title,rect_title),(surf_1,rect_1),(surf_2,rect_2),(surf_3,rect_3)),doreturn=True)) #// selective reblitting? have all updated objects be placed in a tuple list?
         pygame.display.flip()
 def gameactive():
-    global menustate, GROUND_Y, TICKSPEED, score_font, parallex0_x, parallex1_x, parallex2_x, ground_x
+    global menustate, GROUND_Y, TICKSPEED, score_font, parallex0_x, parallex1_x, parallex2_x, ground_x, condor_surf, queue
     parallex0_x = parallex1_x = parallex2_x = ground_x = 0
+    player_index = condor_index = 0
     finalscore = 0
     players_gravity_speed = 0
+    queue = random.randint(0,1)
     # conditionals init
     isalive = True
     isjumped = False
     isdeadjumped = False
-    cacti_rect.left = yukka_rect.left = joshuah_rect.left = 800
+    cacti_rect.left = condor_rect.left = 800
+    yukka_rect.left = 400
+    joshuah_rect.left = 650
     start_time = pygame.time.get_ticks()
     tickspeed = TICKSPEED
 
@@ -224,24 +240,19 @@ def gameactive():
                     return 2
 
         if isalive:
-            player_surf = list_player[1]
-            # player_surf = animation_cycler()
+            player_index = animation_cycler(list_player,200)
             parallex2_x = parallex_scroller(parallex2,parallex2_x,1)
             parallex1_x = parallex_scroller(parallex1,parallex1_x,2)
             parallex0_x = parallex_scroller(parallex0,parallex0_x,4)
             ground_x = parallex_scroller(ground_surf,ground_x,5)
-            cacti_rect.x -= 5
-            if cacti_rect.right <= 0:
-                cacti_rect.left = 800+random.randint(0,400)
-                cacti_rect.x -= 5
-            yukka_rect.x -=5
-            # if yukka_rect.right <= 0: # I cant find a way to distinguish between these and the forground objects
-            #     yukka_rect.left = 800+random.randint(0,800)
-            #     yukka_rect.x -= 5
-            # joshuah_rect.x -=5
-            # if joshuah_rect.right <= 0:
-            #     joshuah_rect.left = 800+random.randint(400,1200)
-            #     joshuah_rect.x -= 5
+            if queue == 0:
+                spritescroller(cacti_rect,0,400,5,True)
+            else:
+                condor_index = animation_cycler(list_condor,100)
+                spritescroller(condor_rect,100,300,5,True)
+            spritescroller(yukka_rect,0,800,5)
+            spritescroller(joshuah_rect,400,1200,5)
+            print(queue)
             # player
             players_gravity_speed += 1
             player_rect.y += players_gravity_speed
@@ -253,12 +264,13 @@ def gameactive():
                 isalive = False
                 finalscore = score
                 score_eval(finalscore)
+            tickspeed+=1
 
         else:
             if not isdeadjumped:
                 players_gravity_speed = -20
                 isdeadjumped = True
-            player_surf = list_player[2]
+            player_surf = player_surf2
             tickspeed=50
             players_gravity_speed += 1
             player_rect.y += players_gravity_speed
@@ -274,12 +286,13 @@ def gameactive():
             score_text = f"Score:{score}"
         else:
             score_text = f"Score:{finalscore}"
-        screen.blit(player_surf, player_rect)
+        screen.blit(list_player[player_index], player_rect)
         score_surf = score_font.render(score_text, True, "white")
         screen.blit(score_surf, score_surf.get_rect(center=(400, 80)))
         screen.blit(cacti_surf, cacti_rect)
-        # screen.blit(yukka_surf, yukka_rect)
-        # screen.blit(joshuah_surf, joshuah_rect)
+        screen.blit(list_condor[condor_index], condor_rect)
+        screen.blit(yukka_surf, yukka_rect)
+        screen.blit(joshuah_surf, joshuah_rect)
         pygame.display.flip()
 # main
 def main():
