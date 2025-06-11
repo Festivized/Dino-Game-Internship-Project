@@ -1,5 +1,8 @@
 import pygame
 import random
+
+from pygame import K_SPACE
+
 '''
 Todo
 - selective reblitting to improve performance
@@ -14,16 +17,17 @@ pygame.init()
 screen = pygame.display.set_mode((800,400))
 clock = pygame.time.Clock()
 
-# constants setup
+# variables setup
 # game
 GROUND_Y = 300  # The Y-coordinate of the ground level
 JUMP_GRAVITY_START_SPEED = -20  # The speed at which the player jumps
 WORLD_SCROLLSPEED = 5
 TICKSPEED = 100
+finalscore = 0
 # menu
 menu_select = 0
 list_fontsize=[20,20,20]
-
+score_font = pygame.font.Font(pygame.font.get_default_font(),20)
 
 if True: # delete this iftrue when im on my final pass, ignore for now as its used to collapse the block
     # Assetloader
@@ -77,6 +81,13 @@ menustate = 1 #[exit,menu,game,transition]
 # func defs
 def placeholder():
     print("wip")
+# WIP
+def animation_cycler(list: list,delmin:int,delmax:int):
+    '''cycles through anim frames for a sprite, set delmin=delmax if want consistant timing'''
+def parallex_scroller(sprite,x_offset,y_offset,scrollspeed=5):
+    placeholder()
+# finished
+# score methods
 def score_reader(): # Imports and updates the top 3 scores from saved file and returning as a list credits:Dylan L
     with open('assets/score.txt', 'r') as file:
         content = file.read()
@@ -96,9 +107,6 @@ def score_writer(scorelist=None):
 def score_formatter():
     formatted = f"1. {score_ram[0]}\n2. {score_ram[1]}\n3. {score_ram[2]}"
     return formatted
-# def parallex_scroller(sprite,x_offset,y_offset,scrollspeed=5):
-#     placeholder()
-# finished
 def resize(index:int):
     '''scales text up to size if active'''
     global menu_select
@@ -118,16 +126,10 @@ def collisioncheck():
         if player_rect.colliderect(rect):
             return True
     return False
-def animation_cycler(list: list,delmin:int,delmax:int):
-    '''cycles through anim frames for a sprite, set delmin=delmax if want consistant timing'''
 def menuactive():
     global menu_select
-    # reloads variables
-    # invalid catcher
-    screen.fill("#B00BA5")
     # variable initialization
     menu_select = 0
-
 
     # font loader
     title_font = pygame.font.Font(pygame.font.get_default_font(),50)
@@ -180,81 +182,88 @@ def menuactive():
         screen.blits(((splash_surf,splash_rect),(surf_title,rect_title),(surf_1,rect_1),(surf_2,rect_2),(surf_3,rect_3),(surf_score_mn,rect_score_mn)))
         # print(screen.blits(((surf_title,rect_title),(surf_1,rect_1),(surf_2,rect_2),(surf_3,rect_3)),doreturn=True)) #// selective reblitting? have all updated objects be placed in a tuple list?
         pygame.display.flip()
+
+#body
 def gameactive():
-    global menustate
-    global GROUND_Y
-    global TICKSPEED
-    score_font = pygame.font.Font(pygame.font.get_default_font(),20)    # Game state variables reinit
-    players_gravity_speed = 0  # The current speed at which the player falls
+    global menustate, GROUND_Y, TICKSPEED, score_font, finalscore
+    players_gravity_speed = 0
+    # conditionals init
     isalive = True
     isjumped = False
     cacti_rect.left = yukka_rect.left = joshuah_rect.left = 800
-    tickspeed = TICKSPEED #100ms/frame = 60fps
     start_time = pygame.time.get_ticks()
+
     while True:
         score = int((start_time-pygame.time.get_ticks())/100)
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 menustate=0
             if event.type == pygame.KEYDOWN:
-                if isalive:
-                    if event.key == pygame.K_SPACE and not isjumped: # make it a chargeup?
-                        players_gravity_speed = -20
-                        isjumped = True
+                if isalive and event.key == pygame.K_SPACE and not isjumped: # make it a chargeup?
+                    players_gravity_speed = -20
+                    isjumped = True
                 if event.key == pygame.K_ESCAPE:
                     return 1
-        if collisioncheck(): #if it hits (true) not alive
-            isalive = False
-            if not isalive:
-                finalscore = score
-                score_eval(finalscore)
-                players_gravity_speed = -20
-                while True:
-                    clock.tick(50)
-                    score_surf_gm = score_font.render(f"Topscores:\n{finalscore}",antialias=True,color="white")
-                    screen.blit(score_surf_gm,score_surf_gm.get_rect(topright=(750,75)))
-                    players_gravity_speed += 1
-                    player_rect.y += players_gravity_speed
-                    screen.blit(sky_surf, (0, 0))
-                    screen.blit(ground_surf, (0, 0))
-                    screen.blit(cacti_surf, cacti_rect)
-                    screen.blit(yukka_surf,yukka_rect)
-                    screen.blit(joshuah_surf,joshuah_rect)
-                    screen.blit(list_player[2], player_rect)
-                    pygame.display.flip()
-                    for event in pygame.event.get():
-                        if event.type == pygame.QUIT:
-                            return 2
-                        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                            return 1
-        # def transitionactive():
-        # calculations
-        # cacti
-        cacti_rect.x -= 5
-        if cacti_rect.right <= 0:
-            cacti_rect.left = 800+random.randint(0,400)
-            cacti_rect.x -= 5
-        yukka_rect.x -=5
-        # if yukka_rect.right <= 0: # I cant find a way to distinguish between these and the forground objects
-        #     yukka_rect.left = 800+random.randint(0,800)
-        #     yukka_rect.x -= 5
-        # joshuah_rect.x -=5
-        # if joshuah_rect.right <= 0:
-        #     joshuah_rect.left = 800+random.randint(400,1200)
-        #     joshuah_rect.x -= 5
-    # player
-        players_gravity_speed += 1
-        player_rect.y += players_gravity_speed
-        if player_rect.bottom > GROUND_Y:
-            player_rect.bottom = GROUND_Y
-            isjumped = False
+                if not isalive and (event.key == pygame.K_r or event.key == pygame.K_SPACE):
+                    return 2
 
+        if alive:
+            cacti_rect.x -= 5
+            if cacti_rect.right <= 0:
+                cacti_rect.left = 800+random.randint(0,400)
+                cacti_rect.x -= 5
+            yukka_rect.x -=5
+            # if yukka_rect.right <= 0: # I cant find a way to distinguish between these and the forground objects
+            #     yukka_rect.left = 800+random.randint(0,800)
+            #     yukka_rect.x -= 5
+            # joshuah_rect.x -=5
+            # if joshuah_rect.right <= 0:
+            #     joshuah_rect.left = 800+random.randint(400,1200)
+            #     joshuah_rect.x -= 5
+            # player
+            players_gravity_speed += 1
+            player_rect.y += players_gravity_speed
+            if player_rect.bottom > GROUND_Y:
+                player_rect.bottom = GROUND_Y
+                isjumped = False
+
+            if collisioncheck():
+
+            finalscore = score
+            score_eval(finalscore)
+            players_gravity_speed = -20
+            while True:
+                clock.tick(50)
+                screen.blit((splash_surf,splash_rect))
+                score_surf_gm = score_font.render(f"Topscores:\n{finalscore}",antialias=True,color="white")
+                screen.blit(score_surf_gm,score_surf_gm.get_rect(topright=(750,75)))
+                players_gravity_speed += 1
+                player_rect.y += players_gravity_speed
+                screen.blit(sky_surf, (0, 0))
+                screen.blit(ground_surf, (0, 0))
+                screen.blit(cacti_surf, cacti_rect)
+                # screen.blit(yukka_surf,yukka_rect)
+                # screen.blit(joshuah_surf,joshuah_rect)
+                screen.blit(list_player[2], player_rect)
+                pygame.display.flip()
+                while player_rect.top <=0:
+                    screen.blit((splash_surf,splash_rect))
+                    score_surf_gm = score_font.render(f"Topscores:\n{finalscore}",antialias=True,color="white")
+                    screen.blit(score_surf_gm,score_surf_gm.get_rect(center=(400,200)))
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        return 0
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_ESCAPE:
+                            return 1
+                        if event.key == pygame.K_r or K_SPACE:
+                            return 2
+
+        #renderer
         clock.tick(TICKSPEED)
-        # renderer
-        # def parallex/rendercroller(sprite_surf:surface,xoffset:int,speed:int,y:):
-        #     get length of surf, get speed, fuckccu
-        #     screen.blit(sprite_surf, (multiple rects))
-        screen.blit(score_font.render(f"Topscores:\n{score}", True, "White"),rect(topright=(750,75)))
+        score_surf_gm = score_font.render(f"Topscores:\n{score}",antialias=True,color="white")
+        screen.blit(score_font.render(score_surf_gm,score_surf_gm.get_rect(topright=(750,75))))
         screen.blit(sky_surf, (0, 0))
         screen.blit(ground_surf, (0, 0))
         screen.blit(cacti_surf, cacti_rect)
@@ -262,6 +271,8 @@ def gameactive():
         screen.blit(joshuah_surf,joshuah_rect)
         screen.blit(list_player[0], player_rect)
         pygame.display.flip()
+
+# main
 def main():
     global menustate
     queuedstate = None
